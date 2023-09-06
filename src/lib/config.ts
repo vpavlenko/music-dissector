@@ -26,6 +26,6 @@ export const COLOR = {
   GRID_WRONG_DOWNBEAT: '#FF0000',
 }
 
-export const BASE_AUDIO_URL = 'https://taejun-allinone-demo.s3.ap-northeast-2.amazonaws.com'
+export const BASE_AUDIO_URL = 'http://localhost:8000'
 export const BEAT_FREQUENCY = 1500
 export const DOWNBEAT_FREQUENCY = 3000

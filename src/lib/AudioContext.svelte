@@ -67,9 +67,9 @@
     loading.set(true)
     duration.set(0)
 
-    const mixdownUrl = `${BASE_AUDIO_URL}/mixdown/${trackId}.mp3`
+    const mixdownUrl = `${BASE_AUDIO_URL}/mixdown.mp3`
     const stemUrls = ['drums', 'bass', 'vocals', 'other'].map(
-      (stem) => `${BASE_AUDIO_URL}/demixed/${trackId}/${stem}.mp3`,
+      (stem) => `${BASE_AUDIO_URL}/${stem}.mp3`,
     )
     await loadAudioFiles([mixdownUrl, ...stemUrls])
 
