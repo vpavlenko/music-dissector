@@ -13,7 +13,7 @@
   import SharedCanvas from '$lib/SharedCanvas.svelte'
   import { base } from '$app/paths'
   import { onMount } from 'svelte';
-  import JSZip from 'JSZip'
+  import JSZip from 'jszip'
 
   export let data
 
