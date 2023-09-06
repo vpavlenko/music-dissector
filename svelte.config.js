@@ -1,4 +1,5 @@
 import adapter from "@sveltejs/adapter-static";
+import vercel from "@sveltejs/adapter-vercel";
 import { vitePreprocess } from "@sveltejs/kit/vite";
 
 const dev = process.argv.includes("dev");
@@ -13,11 +14,7 @@ const config = {
     inspector: true,
   },
   kit: {
-    adapter: adapter({
-      fallback: "index.html",
-      pages: "build",
-      assets: "build",
-    }),
+    adapter: vercel(),
     paths: {
       base: dev ? "" : process.env.BASE_PATH,
     },
