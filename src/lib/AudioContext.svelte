@@ -49,8 +49,9 @@
   }
 
   async function loadAudioBuffer(url: string): Promise<AudioBuffer> {
-    const response = await fetch(url, { cache: 'force-cache' })
-    const arrayBuffer = await response.arrayBuffer()
+    // @ts-ignore
+    debugger
+    const arrayBuffer = await window.loadedZip.files[url].async('arraybuffer')
     return await audioCtx.decodeAudioData(arrayBuffer)
   }
 
@@ -67,9 +68,9 @@
     loading.set(true)
     duration.set(0)
 
-    const mixdownUrl = `${BASE_AUDIO_URL}/mixdown.mp3`
+    const mixdownUrl = `mixdown.mp3`
     const stemUrls = ['drums', 'bass', 'vocals', 'other'].map(
-      (stem) => `${BASE_AUDIO_URL}/${stem}.mp3`,
+      (stem) => `${stem}.mp3`,
     )
     await loadAudioFiles([mixdownUrl, ...stemUrls])
 

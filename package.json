@@ -39,6 +39,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"jszip": "^3.10.1",
 		"three": "^0.153.0"
 	}
 }

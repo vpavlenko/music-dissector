@@ -180,10 +180,9 @@
       </a>
     </div>
   </div>
-
+<!-- 
   <div class="flex flex-row">
     <div class="w-[30rem] p-2">
-      <!-- <h2 class="text-2xl font-bold">Scores for {$page.params.track}</h2> -->
       <div class="table-container">
         <table class="table table-compact table-hover">
           <thead>
@@ -218,7 +217,7 @@
         </table>
       </div>
     </div>
-  </div>
+  </div> -->
 {/key}
 
 <svelte:window on:keydown={handleKeydown} />

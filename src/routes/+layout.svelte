@@ -46,13 +46,13 @@
           </a>
         </svelte:fragment>
 
-        <svelte:fragment slot="default">
+        <!-- <svelte:fragment slot="default">
             <select class="select w-96 py-0.5" bind:value={selected} on:change={redirect}>
               {#each tracks as track}
                 <option value={track}>{track}</option>
               {/each}
             </select>
-        </svelte:fragment>
+        </svelte:fragment> -->
 
         <svelte:fragment slot="trail">
           <a class="btn-bar" href="{base}/about"> About </a>

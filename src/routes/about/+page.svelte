@@ -41,12 +41,17 @@
         You can also try the models on your own tracks at <a href="https://huggingface.co/spaces/taejunkim/all-in-one/" class="anchor" target="_blank">Hugging Face Space</a>.
         For more information, please refer to the <a href="http://arxiv.org/abs/2307.16425/" class="anchor" target="_blank">paper</a>.
       </p>
+      <p style="margin-top: 2em;">
+        Arbitrary data loading via <a href="https://huggingface.co/spaces/vpavlenko/all-in-one/" target="_blank">🤗</a> is added for <i><a href="https://github.com/vpavlenko/study-music">study-music</a></i>
+      </p>
     </div>
 
     <div class="pt-10">
+      <i>
       <a class="text-slate-400" href="https://taejun.kim/" target="_blank">
-        <i>Taejun Kim</i>
-      </a>
+        Taejun Kim
+      </a> and <a class="text-slate-400" href="https://github.com/vpavlenko/"  target="_blank">Vitaly Pavlenko</a>
+    </i>
     </div>
   </div>
 </div>
