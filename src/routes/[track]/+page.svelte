@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
   import Navigator from '$lib/Navigator.svelte'
-  import { paused, mutes, metronome } from '$lib/stores'
+  import { paused, mutes, metronome, editURL, analysis } from '$lib/stores'
   import Labels from '$lib/Labels.svelte'
   import Waveform from '$lib/Waveform.svelte'
   import WaveformGrid from '$lib/WaveformGrid.svelte'
@@ -12,10 +12,10 @@
   import WrongBeats from '$lib/WrongBeats.svelte'
   import SharedCanvas from '$lib/SharedCanvas.svelte'
   import { base } from '$app/paths'
+  import { onMount } from 'svelte';
+  import JSZip from 'JSZip'
 
   export let data
-
-  console.log('data', data)
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.code === 'Space') {
@@ -23,8 +23,32 @@
       event.preventDefault()
     }
   }
-</script>
 
+  const fetchData = async (url: string) => {
+    if (!url) return
+    const response = await fetch(url, { cache: 'force-cache' });
+    const archiveBuffer = await response.arrayBuffer();
+    const zip = new JSZip();
+
+    const newAnalysis = await zip.loadAsync(archiveBuffer);
+    analysis.set(newAnalysis);
+    data = JSON.parse(await newAnalysis.files['dissector.json'].async('string'));
+    console.log(data)
+};
+
+  onMount(() => {
+    // Refetch whenever the editURL changes
+    const unsubscribe = editURL.subscribe(url => {
+      fetchData(url);
+    });
+
+    return () => {
+      unsubscribe(); // Cleanup subscription on component destroy
+    };
+  });
+
+</script>
+{#if data.inferences}
 {#key $page.params.track}
   <AudioContext
     trackId={$page.params.track}
@@ -180,45 +204,9 @@
       </a>
     </div>
   </div>
-<!-- 
-  <div class="flex flex-row">
-    <div class="w-[30rem] p-2">
-      <div class="table-container">
-        <table class="table table-compact table-hover">
-          <thead>
-            <tr>
-              <th>Target</th>
-              <th>Metric</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Beat</td>
-              <td>F-measure</td>
-              <td>{data.scores.beat.f1.toFixed(4)}</td>
-            </tr>
-            <tr>
-              <td>Downbeat</td>
-              <td>F-measure</td>
-              <td>{data.scores.downbeat.f1.toFixed(4)}</td>
-            </tr>
-            <tr>
-              <td>Segment</td>
-              <td>F-measure @ 0.5s</td>
-              <td>{data.scores.segment['F-measure@0.5'].toFixed(4)}</td>
-            </tr>
-            <tr>
-              <td>Label</td>
-              <td>Pairwise F-measure</td>
-              <td>{data.scores.segment['Pairwise F-measure'].toFixed(4)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div> -->
 {/key}
+{/if}
+
 
 <svelte:window on:keydown={handleKeydown} />
 

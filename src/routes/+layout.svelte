@@ -12,7 +12,7 @@
 
   import { page } from '$app/stores'
   import { base } from '$app/paths'
-  import { loading } from '$lib/stores'
+  import { loading, editURL } from '$lib/stores'
   import tracks from '$lib/tracks'
   import { afterNavigate, goto } from '$app/navigation'
   import Spinner from '$lib/Spinner.svelte'
@@ -23,11 +23,16 @@
     selected = $page.params.track ?? selected
   })
 
-  async function redirect(event: Event) {
-    $loading = true
+  let urlValue = '';
 
-    await goto(`${base}/${selected}`)
-  }
+  // When the component loads, subscribe to editURL to get its value
+  editURL.subscribe(value => {
+    urlValue = value;
+  })();
+
+  const handleURLChange = () => {
+    editURL.set(urlValue);
+  };
 </script>
 
 <!-- App Shell -->
@@ -46,14 +51,16 @@
           </a>
         </svelte:fragment>
 
-        <!-- <svelte:fragment slot="default">
-            <select class="select w-96 py-0.5" bind:value={selected} on:change={redirect}>
-              {#each tracks as track}
-                <option value={track}>{track}</option>
-              {/each}
-            </select>
-        </svelte:fragment> -->
-
+        <svelte:fragment slot="default">
+          <input 
+            type="text" 
+            bind:value={urlValue} 
+            placeholder="Enter URL here" 
+            class="input w-96 py-0.5" 
+            on:change={handleURLChange}
+          />
+        </svelte:fragment>
+                
         <svelte:fragment slot="trail">
           <a class="btn-bar" href="{base}/about"> About </a>
         </svelte:fragment>

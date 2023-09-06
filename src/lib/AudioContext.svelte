@@ -1,8 +1,7 @@
 <script context="module" lang="ts">
   import { browser } from '$app/environment'
   import { get } from 'svelte/store'
-  import { paused, duration, mutes, loading, metronome } from '$lib/stores'
-  import { BASE_AUDIO_URL } from './config'
+  import { paused, duration, mutes, loading, metronome, analysis } from '$lib/stores'
   import { onDestroy, onMount } from 'svelte'
 
   export let audioCtx: AudioContext
@@ -49,10 +48,16 @@
   }
 
   async function loadAudioBuffer(url: string): Promise<AudioBuffer> {
+    let files;
+    const unsubscribe = analysis.subscribe(value => {
+      // @ts-ignore
+      files = value.files;
+    });
+    unsubscribe();  // immediately unsubscribe after getting the value
+
     // @ts-ignore
-    debugger
-    const arrayBuffer = await window.loadedZip.files[url].async('arraybuffer')
-    return await audioCtx.decodeAudioData(arrayBuffer)
+    const arrayBuffer = await files[url].async('arraybuffer');
+    return await audioCtx.decodeAudioData(arrayBuffer);
   }
 
   async function loadAudioFiles(urls: string[]) {
