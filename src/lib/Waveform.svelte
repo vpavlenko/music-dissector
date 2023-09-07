@@ -4,8 +4,10 @@
   import { duration, paused } from '$lib/stores'
   import { FPS, FRAMES_PER_WINDOW, COLOR } from '$lib/config'
   import { getPlaybackTime } from './AudioContext.svelte'
+  import type { Note } from '../types';
 
   export let wav: { [key: string]: number[] }
+  export let midi: Note[] = []
 
   let mounted = false
 
@@ -81,6 +83,7 @@
     drawWave(wav.low, COLOR.WAV_LOW, COLOR.WAV_LOW_OPACITY)
     drawWave(wav.mid, COLOR.WAV_MID, COLOR.WAV_MID_OPACITY)
     drawWave(wav.high, COLOR.WAV_HIGH, COLOR.WAV_HIGH_OPACITY)
+    drawNotes()
   }
 
   function drawWave(wave: number[], color: string, opacity: number) {
@@ -94,9 +97,6 @@
 
     const geometryUpper = new THREE.ShapeGeometry(shape)
 
-    const geometryLower = geometryUpper.clone()
-    geometryLower.scale(1, -1, 1)
-
     const material = new THREE.MeshBasicMaterial({
       color,
       opacity,
@@ -106,10 +106,38 @@
     })
 
     const meshUpper = new THREE.Mesh(geometryUpper, material)
-    const meshLower = new THREE.Mesh(geometryLower, material)
 
     scene.add(meshUpper)
-    scene.add(meshLower)
+  }
+
+  // const midiNotes = [
+  //   { start: 0, end: 1, pitch: 50 },
+  //   { start: 2, end: 3, pitch: 50 },
+  //   { start: 4, end: 5.5, pitch: 55 },
+  //   { start: 28, end: 30, pitch: 55 }
+  // ];
+
+  function drawNotes() {
+    console.log('midi', midi)
+    midi.forEach(note => {
+      const width = (note.end - note.start) * FPS * hopSize; // adjust as per your requirement
+      const height = 5; // a constant height for now, but you can map this based on pitch if required
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      geometry.translate(width / 2, 0, 0);
+      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // red color for now
+      const mesh = new THREE.Mesh(geometry, material);
+
+      // Setting the position
+      mesh.position.x = note.start * FPS * hopSize;  // position it at note.start
+
+      // mesh.position.y = note.pitch; // adjust this based on your scene size and range of pitch
+      mesh.position.y = -80 + note.pitch;
+
+      mesh.userData = { pitch: note.pitch }; // store pitch data for later retrieval on hover
+
+      scene.add(mesh);
+    });
   }
 </script>
 

@@ -9,11 +9,10 @@
   import AudioContext from '$lib/AudioContext.svelte'
   import TimeDisplay from '$lib/TimeDisplay.svelte'
   import WaveformTitle from '$lib/WaveformTitle.svelte'
-  import WrongBeats from '$lib/WrongBeats.svelte'
-  import SharedCanvas from '$lib/SharedCanvas.svelte'
   import { base } from '$app/paths'
   import { onMount } from 'svelte';
   import JSZip from 'jszip'
+  import type { Note } from '../../types.js';
 
   export let data
 
@@ -24,6 +23,22 @@
     }
   }
 
+function parseNotesCSV(dataStr: string): Note[] {
+    const lines = dataStr.trim().split('\n');
+    
+    // Ignore the header line
+    const noteLines = lines.slice(1);
+
+    return noteLines.map(line => {
+        const values = line.split(',');
+        return {
+            start: parseFloat(values[0]),
+            end: parseFloat(values[1]),
+            pitch: parseInt(values[2], 10)
+        };
+    });
+}
+
   const fetchData = async (url: string) => {
     if (!url) return
     const response = await fetch(url, { cache: 'force-cache' });
@@ -31,10 +46,14 @@
     const zip = new JSZip();
 
     const newAnalysis = await zip.loadAsync(archiveBuffer);
-    analysis.set(newAnalysis);
+
     data = JSON.parse(await newAnalysis.files['dissector.json'].async('string'));
-    console.log(data)
-};
+    let bassMidi = parseNotesCSV(await newAnalysis.files['bass_basic_pitch.csv'].async('string'))
+    let vocalsMidi = parseNotesCSV(await newAnalysis.files['vocals_basic_pitch.csv'].async('string'))
+    let otherMidi = parseNotesCSV(await newAnalysis.files['other_basic_pitch.csv'].async('string'))
+    analysis.set({files: newAnalysis.files, bassMidi, vocalsMidi, otherMidi});
+    console.log('VPDBG analysis.set', newAnalysis)
+  };
 
   onMount(() => {
     // Refetch whenever the editURL changes
@@ -48,7 +67,7 @@
   });
 
 </script>
-{#if data.inferences}
+{#if $analysis.files}
 {#key $page.params.track}
   <AudioContext
     trackId={$page.params.track}
@@ -59,7 +78,7 @@
   <div class="grid grid-cols-[6rem_auto] divide-y my-2">
     <div class="flex flex-row">
       <div class="navigator-label w-[4.5rem] flex items-center justify-center bg-primary-600">
-        <span class="text-black pr-2">AI</span>
+        <span class="text-black pr-2">allin1</span>
       </div>
       <div class="navigator-label-triangle-top" />
     </div>
@@ -73,19 +92,6 @@
       />
     </div>
 
-    {#if data.scores.beat.f1 === 1.0 && data.scores.downbeat.f1 === 1.0}
-      <div class="bg-secondary-600 h-1" />
-      <div class="bg-secondary-600 h-1" />
-    {:else}
-      <div />
-      <div class="w-full h-1.5">
-        <SharedCanvas>
-          <WrongBeats preds={data.inferences.beats} trues={data.truths.beats} />
-          <WrongBeats circle preds={data.inferences.downbeats} trues={data.truths.downbeats} />
-        </SharedCanvas>
-      </div>
-    {/if}
-
     <div class="navigator-label">Drum</div>
     <div><Navigator energy={data.nav.drum} /></div>
 
@@ -97,16 +103,6 @@
 
     <div class="navigator-label">Other</div>
     <div><Navigator energy={data.nav.other} /></div>
-
-    <div class="flex flex-row">
-      <div class="navigator-label w-[4.5rem] flex items-center justify-center bg-primary-600">
-        <span class="text-black">Human</span>
-      </div>
-      <div class="navigator-label-triangle-bottom" />
-    </div>
-    <div>
-      <Labels labels={data.truths.labels} boundaries={data.truths.segments} />
-    </div>
   </div>
 
   <div class="relative my-2" style="height: calc(24rem + 7px);">
@@ -122,18 +118,18 @@
       <div class="z-10 pl-2">
         <WaveformTitle index={1} title="Bass" />
       </div>
-      <div><Waveform wav={data.wav.bass} /></div>
+      <div><Waveform wav={data.wav.bass} midi={$analysis.bassMidi}/></div>
 
       <div class="z-10 pl-2">
         <WaveformTitle index={2} title="Vocal" />
       </div>
-      <div><Waveform wav={data.wav.vocal} /></div>
+      <div><Waveform wav={data.wav.vocal} midi={$analysis.vocalsMidi}/></div>
 
       <div class="z-10 pl-2" style="border-bottom-width: 2px">
         <WaveformTitle index={3} title="Other" />
       </div>
       <div style="border-bottom-width: 2px">
-        <Waveform wav={data.wav.other} />
+        <Waveform wav={data.wav.other} midi={$analysis.otherMidi}/>
       </div>
     </div>
 

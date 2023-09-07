@@ -48,15 +48,8 @@
   }
 
   async function loadAudioBuffer(url: string): Promise<AudioBuffer> {
-    let files;
-    const unsubscribe = analysis.subscribe(value => {
-      // @ts-ignore
-      files = value.files;
-    });
-    unsubscribe();  // immediately unsubscribe after getting the value
-
     // @ts-ignore
-    const arrayBuffer = await files[url].async('arraybuffer');
+    const arrayBuffer = await get(analysis).files[url].async('arraybuffer');
     return await audioCtx.decodeAudioData(arrayBuffer);
   }
 
