@@ -52,7 +52,6 @@ function parseNotesCSV(dataStr: string): Note[] {
     let vocalsMidi = parseNotesCSV(await newAnalysis.files['vocals_basic_pitch.csv'].async('string'))
     let otherMidi = parseNotesCSV(await newAnalysis.files['other_basic_pitch.csv'].async('string'))
     analysis.set({files: newAnalysis.files, bassMidi, vocalsMidi, otherMidi});
-    console.log('VPDBG analysis.set', newAnalysis)
   };
 
   onMount(() => {
@@ -133,7 +132,7 @@ function parseNotesCSV(dataStr: string): Note[] {
       </div>
     </div>
 
-    <div class="absolute w-full grid grid-cols-[6rem_auto]">
+    <div class="absolute w-full grid grid-cols-[6rem_auto]" style="pointer-events: none;">
       <div />
       <div class="w-full" style="height: calc(24rem + 7px);">
         <WaveformGrid

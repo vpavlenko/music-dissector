@@ -1,5 +1,8 @@
 <script lang="ts">
   import * as THREE from 'three'
+  import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+  import helvetikerRegular from 'three/examples/fonts/helvetiker_regular.typeface.json';
+  import { FontLoader } from "three/examples/jsm/loaders/FontLoader"
   import { onMount, onDestroy } from 'svelte'
   import { duration, paused } from '$lib/stores'
   import { FPS, FRAMES_PER_WINDOW, COLOR } from '$lib/config'
@@ -8,6 +11,8 @@
 
   export let wav: { [key: string]: number[] }
   export let midi: Note[] = []
+
+  const FONT = new FontLoader().parse(helvetikerRegular)
 
   let mounted = false
 
@@ -24,13 +29,22 @@
   $: if (!$paused) animate()
   $: if ($duration) animate()
 
+  function midiToNoteName(midiPitch: number) {
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    let octave = Math.floor(midiPitch / 12) - 1; // This is to get the octave number. The minus 1 is because MIDI's lowest octave starts from C-1.
+    let noteIndex = midiPitch % 12; // This gives us the position of the note within the 12-note scale.
+
+    return noteNames[noteIndex] + octave;
+  }
+
   onMount(() => {
     dpr = window.devicePixelRatio || 1
     mounted = true
 
     resizeAndDraw()
     animate()
-  })
+ })
 
   onDestroy(() => {
     mounted = false
@@ -118,10 +132,9 @@
   // ];
 
   function drawNotes() {
-    console.log('midi', midi)
     midi.forEach(note => {
       const width = (note.end - note.start) * FPS * hopSize; // adjust as per your requirement
-      const height = 5; // a constant height for now, but you can map this based on pitch if required
+      const height = 1; // a constant height for now, but you can map this based on pitch if required
 
       const geometry = new THREE.PlaneGeometry(width, height);
       geometry.translate(width / 2, 0, 0);
@@ -137,6 +150,27 @@
       mesh.userData = { pitch: note.pitch }; // store pitch data for later retrieval on hover
 
       scene.add(mesh);
+
+      const textStr = midiToNoteName(note.pitch);  // Convert pitch to string or whatever text you want to display
+      const textSize = 7;  // Set the size of the text. Adjust this as needed.
+
+      const textGeometry = new TextGeometry(textStr, {
+        font: FONT,
+        size: textSize,
+        height: 0.1,  // The thickness to extrude the text. Adjust if needed.
+        curveSegments: 12,
+        bevelEnabled: false
+      });
+
+      const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Set text color to black or adjust as needed
+      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+      // Position the text mesh above the rectangle
+      textMesh.position.x = mesh.position.x;
+      textMesh.position.y = mesh.position.y - 5 + textSize;  // Adjust this as needed to position the text above the rectangle
+
+      scene.add(textMesh);
+
     });
   }
 </script>
