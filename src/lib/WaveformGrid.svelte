@@ -80,6 +80,29 @@
     drawGrid(downbeats, '#FFFE')
   }
 
+  function drawDownbeatNumber(ctx: CanvasRenderingContext2D, x: number, height: number, number: number) {
+    const text = number.toString();
+    
+    ctx.save();
+    
+    // Set up the font and measure text width
+    ctx.font = `${12 * dpr}px Arial`;
+    const textWidth = ctx.measureText(text).width;
+    const padding = 5 * dpr; // 5px padding around text
+    
+    // Draw the semi-opaque white rectangle
+    ctx.fillStyle = 'rgba(0, 0, 0, 1)';  // Semi-opaque white
+    ctx.fillRect(x, height - 12 * dpr - 2 * padding, textWidth + 2 * padding, 12 * dpr + 2 * padding);
+    
+    // Now draw the text (number) in black
+    ctx.fillStyle = 'white';  // Set the color of the text to black
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(text, x + padding, height - 10);  // Draw the number 10px above the bottom of the canvas
+    
+    ctx.restore();
+  }
+
   function drawGrid(gridLines: GridLine[], color: string, dottedLine: boolean = false) {
     const playbackTime = getPlaybackTime()
     const centerFrame = playbackTime * FPS
@@ -109,6 +132,23 @@
       ctx.lineTo(gridLineX, height)
     }
     ctx.stroke()
+
+    if (dottedLine) {  // Only for beats
+        for (const gridLineX of correctGridLineXs) {
+            ctx.moveTo(gridLineX, 0);
+            ctx.lineTo(gridLineX, height);
+        }
+    } else {  // Only for downbeats
+        let firstVisibleDownbeatNumber = predDownbeats.slice(0, startIndex).length + 1;
+
+        for (const gridLineX of correctGridLineXs) {
+            ctx.moveTo(gridLineX, 0);
+            ctx.lineTo(gridLineX, height);
+            drawDownbeatNumber(ctx, gridLineX, height, firstVisibleDownbeatNumber);  // draw downbeat number for each downbeat
+            firstVisibleDownbeatNumber++;
+        }
+    }
+
 
     for (const [predX, trueX] of wrongGridLineXs) {
       ctx.lineWidth = dpr * 1
